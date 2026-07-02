@@ -192,7 +192,11 @@ class ToxicityPredictor {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = ToxicityPredictor;
 }
-// Export for browser usage
+// Export for browser/window usage
 if (typeof window !== 'undefined') {
   window.ToxicityPredictor = ToxicityPredictor;
+}
+// Export for service worker / worker scope usage
+if (typeof self !== 'undefined') {
+  self.ToxicityPredictor = ToxicityPredictor;
 }

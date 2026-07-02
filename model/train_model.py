@@ -21,10 +21,15 @@ from sklearn.metrics import classification_report, accuracy_score
 # %%
 # Load data (change path if necessary)
 try:
-    df = pd.read_csv("cleaned_data.csv")
+    import os
+    local_path = os.path.join("..", "data", "cleaned_data.csv")
+    if os.path.exists(local_path):
+        df = pd.read_csv(local_path)
+    else:
+        df = pd.read_csv("cleaned_data.csv")
     print(f"Dataset loaded successfully! Total records: {len(df)}")
 except FileNotFoundError:
-    print("Error: cleaned_data.csv not found. Please upload it to your Colab directory.")
+    print("Error: cleaned_data.csv not found. Please place it in ../data/ or upload it to your Colab directory.")
 
 # Drop any rows with NaN tweets
 df = df.dropna(subset=['tweet'])
@@ -85,8 +90,8 @@ print(classification_report(y_test, y_pred, target_names=["Hate Speech", "Offens
 # This creates a zero-dependency model that can make predictions directly inside our Chrome Extension background script in milliseconds!
 
 # %%
-# Extract vocabulary mapping (word -> vector index)
-vocabulary = vectorizer.vocabulary_
+# Extract vocabulary mapping (word -> vector index) and convert values to native Python ints to prevent JSON serialization error
+vocabulary = {word: int(idx) for word, idx in vectorizer.vocabulary_.items()}
 # Inverse mapping (index -> word) is also useful, but we only need index to match vectorizer
 vocab_list = [None] * len(vocabulary)
 for word, idx in vocabulary.items():

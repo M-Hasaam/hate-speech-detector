@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const inputPath = path.join(__dirname, 'labeled_data.csv');
-const outputPath = path.join(__dirname, 'cleaned_data.csv');
+const inputPath = path.join(__dirname, '..', 'data', 'labeled_data.csv');
+const outputPath = path.join(__dirname, '..', 'data', 'cleaned_data.csv');
 
 function decodeHtmlEntities(text) {
   if (!text) return '';

@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Guard Configurations</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  
+  <style>
+    :root {
+      --bg-gradient: linear-gradient(135deg, #0f0c1b 0%, #1e112a 50%, #0b0914 100%);
+      --card-bg: rgba(25, 20, 38, 0.45);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #9d4edd;
+      --primary-glow: rgba(157, 78, 221, 0.45);
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Outfit', sans-serif;
+    }
+
+    body {
+      background: var(--bg-gradient);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 3rem 1.5rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    .container {
+      width: 100%;
+      max-width: 720px;
+      z-index: 10;
+    }
+
+    header {
+      margin-bottom: 2.5rem;
+      text-align: center;
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.6rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .shield-icon {
+      font-size: 2.2rem;
+      animation: float 4s ease-in-out infinite;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      font-weight: 700;
+      background: linear-gradient(to right, #e0aaff, #c77dff, #9d4edd, #7b2cbf);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+      filter: drop-shadow(0 2px 8px rgba(157, 78, 221, 0.25));
+    }
+
+    header p {
+      color: var(--text-muted);
+      font-size: 1rem;
+      font-weight: 300;
+    }
+
+    /* Glassmorphism Card styling */
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 2rem;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      box-shadow: 0 10px 45px -10px rgba(0, 0, 0, 0.5);
+      transition: all 0.3s ease;
+      margin-bottom: 1.5rem;
+    }
+
+    .card:hover {
+      border-color: rgba(157, 78, 221, 0.15);
+      box-shadow: 0 15px 45px -5px rgba(157, 78, 221, 0.08);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 600;
+      margin-bottom: 1.25rem;
+      color: #e0aaff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+      padding-bottom: 0.5rem;
+    }
+
+    /* Form Fields */
+    .settings-group {
+      margin-bottom: 1.5rem;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .settings-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .settings-row:last-child {
+      margin-bottom: 0;
+    }
+
+    label {
+      font-weight: 500;
+      color: #e5e7eb;
+      font-size: 0.95rem;
+    }
+
+    .description {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 0.15rem;
+      font-weight: 300;
+    }
+
+    /* Slider styling */
+    .slider-container {
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .slider {
+      flex-grow: 1;
+      -webkit-appearance: none;
+      height: 6px;
+      border-radius: 9999px;
+      background: rgba(255, 255, 255, 0.12);
+      outline: none;
+    }
+
+    .slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      appearance: none;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #9d4edd 0%, #7b2cbf 100%);
+      cursor: pointer;
+      box-shadow: 0 0 8px var(--primary-glow);
+      transition: transform 0.1s ease;
+    }
+
+    .slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+
+    .slider-val {
+      font-size: 1rem;
+      font-weight: 600;
+      width: 48px;
+      text-align: right;
+      color: #c77dff;
+    }
+
+    /* Checkboxes/Toggles grid */
+    .platforms-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1rem;
+    }
+
+    .platform-checkbox {
+      background: rgba(10, 8, 16, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .platform-checkbox:hover {
+      background: rgba(157, 78, 221, 0.04);
+      border-color: rgba(157, 78, 221, 0.2);
+    }
+
+    .platform-checkbox.active {
+      border-color: var(--primary);
+      background: rgba(157, 78, 221, 0.08);
+      box-shadow: 0 0 10px rgba(157, 78, 221, 0.15);
+    }
+
+    .platform-checkbox input {
+      display: none;
+    }
+
+    .platform-icon {
+      font-size: 1.5rem;
+    }
+
+    .platform-name {
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    /* Keyword List input */
+    .keyword-input-wrapper {
+      display: flex;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    input[type="text"] {
+      flex-grow: 1;
+      background: rgba(10, 8, 16, 0.6);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 0.65rem 1rem;
+      color: var(--text);
+      font-size: 0.95rem;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .btn-add {
+      background: linear-gradient(135deg, #7b2cbf 0%, #9d4edd 100%);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      padding: 0.65rem 1.25rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(157, 78, 221, 0.3);
+    }
+
+    .btn-add:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 16px rgba(157, 78, 221, 0.5);
+    }
+
+    /* Keyword Tags */
+    .keywords-container {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      min-height: 48px;
+      padding: 0.75rem;
+      background: rgba(10, 8, 16, 0.3);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .keyword-tag {
+      background: rgba(157, 78, 221, 0.15);
+      border: 1px solid rgba(157, 78, 221, 0.3);
+      color: #e0aaff;
+      border-radius: 6px;
+      padding: 0.25rem 0.6rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+    }
+
+    .keyword-remove {
+      color: #fca5a5;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.85rem;
+      transition: color 0.1s ease;
+    }
+
+    .keyword-remove:hover {
+      color: #ef4444;
+    }
+
+    .empty-message {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      align-self: center;
+      font-style: italic;
+      font-weight: 300;
+    }
+
+    /* Primary actions */
+    .actions-footer {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1rem;
+    }
+
+    .btn-save {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: white;
+      border: none;
+      border-radius: 12px;
+      padding: 0.85rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.35);
+      flex-grow: 2;
+    }
+
+    .btn-save:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.55);
+    }
+
+    .btn-reset-stats {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.25);
+      color: #fca5a5;
+      border-radius: 12px;
+      padding: 0.85rem 1.25rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      flex-grow: 1;
+    }
+
+    .btn-reset-stats:hover {
+      background: rgba(239, 68, 68, 0.2);
+      border-color: var(--danger);
+    }
+
+    /* Save Status toast */
+    .status-msg {
+      text-align: center;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: var(--success);
+      margin-top: 1rem;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .status-msg.visible {
+      opacity: 1;
+    }
+
+    /* Decorative blobs */
+    .glow-blob {
+      position: absolute;
+      width: 500px;
+      height: 500px;
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(157, 78, 221, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+      z-index: 1;
+      pointer-events: none;
+    }
+    .blob-1 { top: -10%; left: -10%; }
+    .blob-2 { bottom: -10%; right: -10%; }
+  </style>
+</head>
+<body>
+  <div class="glow-blob blob-1"></div>
+  <div class="glow-blob blob-2"></div>
+
+  <div class="container">
+    <header>
+      <div class="logo-area">
+        <span class="shield-icon">🛡️</span>
+        <h1>Social Guard Settings</h1>
+      </div>
+      <p>Configure sensitivity thresholds, active platforms, and custom instant filters</p>
+    </header>
+
+    <main>
+      <!-- CARD 1: Model Sensitivities -->
+      <div class="card">
+        <div class="card-title">⚖️ Model Sensitivity Thresholds</div>
+        
+        <!-- Hate Speech Slider -->
+        <div class="settings-group">
+          <div class="settings-row">
+            <div>
+              <label for="hateThreshold">Hate Speech Threshold</label>
+              <div class="description">Higher values reduce false positives. Lower values increase filtering strength. (Default: 60%)</div>
+            </div>
+          </div>
+          <div class="slider-container">
+            <input type="range" id="hateThreshold" class="slider" min="10" max="95" value="60">
+            <span class="slider-val" id="hateVal">60%</span>
+          </div>
+        </div>
+
+        <!-- Offensive Slider -->
+        <div class="settings-group" style="margin-bottom: 0;">
+          <div class="settings-row">
+            <div>
+              <label for="offensiveThreshold">Offensive Language Threshold</label>
+              <div class="description">Controls when general profanity, vulgarity, or swearing is filtered. (Default: 40%)</div>
+            </div>
+          </div>
+          <div class="slider-container">
+            <input type="range" id="offensiveThreshold" class="slider" min="10" max="95" value="40">
+            <span class="slider-val" id="offensiveVal">40%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- CARD 2: Platforms Selection -->
+      <div class="card">
+        <div class="card-title">🌐 Moderated Platforms</div>
+        <div class="description" style="margin-bottom: 1rem;">Toggle which social media platforms the extension scans for content moderation:</div>
+        
+        <div class="platforms-grid">
+          <!-- Twitter -->
+          <label class="platform-checkbox" id="labelTwitter">
+            <input type="checkbox" id="platformTwitter" checked>
+            <span class="platform-icon">🐦</span>
+            <span class="platform-name">Twitter / X</span>
+          </label>
+          
+          <!-- Instagram -->
+          <label class="platform-checkbox" id="labelInstagram">
+            <input type="checkbox" id="platformInstagram" checked>
+            <span class="platform-icon">📸</span>
+            <span class="platform-name">Instagram</span>
+          </label>
+          
+          <!-- WhatsApp -->
+          <label class="platform-checkbox" id="labelWhatsapp">
+            <input type="checkbox" id="platformWhatsapp" checked>
+            <span class="platform-icon">💬</span>
+            <span class="platform-name">WhatsApp</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- CARD 3: Custom Keyword Blacklist -->
+      <div class="card">
+        <div class="card-title">🚫 Custom Keyword Blacklist (Tier 1)</div>
+        <div class="description" style="margin-bottom: 1rem;">Add custom words or phrases. If detected, content is blurred instantly offline, bypassing the ML check:</div>
+        
+        <div class="keyword-input-wrapper">
+          <input type="text" id="keywordInput" placeholder="Type a keyword and click Add...">
+          <button class="btn-add" id="btnAddKeyword">Add Word</button>
+        </div>
+
+        <div class="keywords-container" id="keywordsContainer">
+          <span class="empty-message" id="emptyMessage">No custom keywords added yet.</span>
+        </div>
+      </div>
+
+      <!-- Actions footer -->
+      <div class="actions-footer">
+        <button class="btn-reset-stats" id="btnResetStats">🧹 Reset Stats</button>
+        <button class="btn-save" id="btnSave">💾 Save Settings</button>
+      </div>
+
+      <div class="status-msg" id="statusMsg">Settings saved successfully!</div>
+    </main>
+  </div>
+
+  <script src="options.js"></script>
+</body>
+</html>

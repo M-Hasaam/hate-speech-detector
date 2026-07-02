@@ -3,7 +3,7 @@ const path = require('path');
 const ToxicityPredictor = require('./predictor');
 
 const weightsPath = path.join(__dirname, 'model_weights.json');
-const csvPath = path.join(__dirname, 'cleaned_data.csv');
+const csvPath = path.join(__dirname, '..', 'data', 'cleaned_data.csv');
 
 if (!fs.existsSync(weightsPath)) {
   console.error('Error: model_weights.json not found!');
