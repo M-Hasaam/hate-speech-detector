@@ -410,6 +410,7 @@
     </div>
   </div>
 
+  <script src="model_weights.js"></script>
   <script src="predictor.js"></script>
   <script>
     let predictorInstance = null;
@@ -420,6 +421,18 @@
     const stepLoad = document.getElementById('stepLoad');
     const stepAnalyzer = document.getElementById('stepAnalyzer');
     const resultsArea = document.getElementById('resultsArea');
+
+    // Auto-load weights immediately if model_weights.js is present
+    if (window.modelWeights) {
+      console.log('✅ Auto-loaded model weights from model_weights.js');
+      rawModelData = window.modelWeights;
+      
+      predictorInstance = new ToxicityPredictor();
+      predictorInstance.loadModelObject(rawModelData);
+      
+      stepLoad.classList.add('hidden');
+      stepAnalyzer.classList.remove('hidden');
+    }
 
     // Drag and drop setup
     dropzone.addEventListener('dragover', (e) => {

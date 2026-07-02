@@ -58,10 +58,13 @@ vectorizer = TfidfVectorizer(max_features=12000, ngram_range=(1, 2), stop_words=
 X = vectorizer.fit_transform(df['tweet'])
 y = df['class'].values
 
-# Split into train and test sets (80% train, 20% test)
-X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
+# Split into train and remaining temp pools (70% train, 30% temp)
+X_train, X_temp, y_train, y_temp = train_test_split(X, y, test_size=0.30, random_state=42, stratify=y)
 
-print(f"Train size: {X_train.shape[0]}, Test size: {X_test.shape[0]}")
+# Split temp pool in half (15% validation, 15% test)
+X_val, X_test, y_val, y_test = train_test_split(X_temp, y_temp, test_size=0.50, random_state=42, stratify=y_temp)
+
+print(f"Train size: {X_train.shape[0]}, Validation size: {X_val.shape[0]}, Test size: {X_test.shape[0]}")
 
 # %% [markdown]
 # ## 5. Train the Model

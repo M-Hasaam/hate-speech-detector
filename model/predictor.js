@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = (typeof require !== 'undefined') ? require('fs') : null;
+const path = (typeof require !== 'undefined') ? require('path') : null;
 
 const SKLEARN_STOP_WORDS = new Set([
   "a", "about", "above", "across", "after", "afterwards", "again", "against", 
