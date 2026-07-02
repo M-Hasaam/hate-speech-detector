@@ -23,15 +23,24 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 # %%
 # Load data (change path if necessary)
 try:
-    # Resolve relative path from model/train/ folder
-    local_path = os.path.join("..", "..", "data", "cleaned_data.csv")
-    if os.path.exists(local_path):
-        df = pd.read_csv(local_path)
+    # Check both single-level (../data) and double-level (../../data) parent directories
+    balanced_path = os.path.join("..", "data", "balanced_data.csv")
+    
+    if not os.path.exists(balanced_path):
+        balanced_path = os.path.join("..", "..", "data", "balanced_data.csv")
+        
+    if os.path.exists(balanced_path):
+        df = pd.read_csv(balanced_path)
+        print(f"Dataset loaded successfully from {balanced_path}! Total records: {len(df)}")
     else:
-        df = pd.read_csv("cleaned_data.csv")
-    print(f"Dataset loaded successfully! Total records: {len(df)}")
+        # Fallback for Colab environment upload (local current directory)
+        if os.path.exists("balanced_data.csv"):
+            df = pd.read_csv("balanced_data.csv")
+            print(f"Dataset loaded successfully from local balanced_data.csv! Total records: {len(df)}")
+        else:
+            raise FileNotFoundError()
 except FileNotFoundError:
-    print("Error: cleaned_data.csv not found. Please place it in ../../data/ or upload it to your workspace.")
+    print("Error: balanced_data.csv not found. Please place it in ../data/ (or ../../data/) or upload it to your workspace.")
 
 # Drop any rows with NaN tweets
 df = df.dropna(subset=['tweet'])

@@ -2,23 +2,23 @@ const fs = require('fs');
 const path = require('path');
 const ToxicityPredictor = require('./predictor');
 
-const weightsPath = path.join(__dirname, 'train', 'model_weights.json');
-const csvPath = path.join(__dirname, '..', 'data', 'cleaned_data.csv');
+const weightsPath = path.join(__dirname, '..', 'train', 'model_weights.json');
+const csvPath = path.join(__dirname, '..', 'data', 'balanced_data.csv');
 
 if (!fs.existsSync(weightsPath)) {
-  console.error('Error: model_weights.json not found in model/train/!');
+  console.error('Error: model_weights.json not found in train/!');
   process.exit(1);
 }
 
 if (!fs.existsSync(csvPath)) {
-  console.error('Error: cleaned_data.csv not found!');
+  console.error('Error: balanced_data.csv not found!');
   process.exit(1);
 }
 
 const predictor = new ToxicityPredictor(weightsPath);
-console.log('✅ Classifier successfully loaded from model/train/model_weights.json!');
+console.log('✅ Classifier successfully loaded from train/model_weights.json!');
 
-console.log('Reading and parsing cleaned_data.csv...');
+console.log('Reading and parsing balanced_data.csv...');
 const content = fs.readFileSync(csvPath, 'utf8');
 
 // Parse CSV manually to handle quotes, commas, and newlines correctly

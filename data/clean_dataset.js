@@ -1,7 +1,7 @@
 const fs = require('fs');
 const path = require('path');
 
-const inputPath = path.join(__dirname, 'new_data.csv');
+const inputPath = path.join(__dirname, 'labeled_data.csv');
 const outputPath = path.join(__dirname, 'cleaned_data.csv');
 
 function decodeHtmlEntities(text) {
@@ -36,11 +36,39 @@ function cleanTweet(text) {
   // 4. Remove @ mentions
   cleaned = cleaned.replace(/@\w+/g, '');
 
-  // 5. Replace multiple whitespaces/newlines with a single space
+  // 5. Clean up multiple runs of exclamations/questions
+  cleaned = cleaned.replace(/!{2,}/g, '!');
+  cleaned = cleaned.replace(/\?{2,}/g, '?');
+
+  // 6. Normalize and strip extra quotes
+  cleaned = cleaned.replace(/""/g, ' ');
+  cleaned = cleaned.replace(/"/g, "");
+  cleaned = cleaned.replace(/^[“”"'`\s]+|[“”"'`\s]+$/g, '');
+
+  // 7. Strip non-ASCII characters / emoji boxes (printable ASCII range)
+  cleaned = cleaned.replace(/[^\x20-\x7E]/g, '');
+
+  // 8. Replace stray single quotes, colons, & and # markers with space/empty
+  cleaned = cleaned.replace(/\s+'\s*|\s*'\s+/g, ' '); // remove hanging single quotes
+  cleaned = cleaned.replace(/#/g, '');               // strip hashtag symbols
+  cleaned = cleaned.replace(/&amp;|&/g, 'and');      // map ampersands to 'and'
+  cleaned = cleaned.replace(/:/g, '');                // strip colons
+  cleaned = cleaned.replace(/\.{2,}/g, ' ');          // strip double periods or ellipses
+
+  // 9. Replace multiple whitespaces/newlines with a single space
   cleaned = cleaned.replace(/\s+/g, ' ');
 
-  // 6. Trim leading/trailing spaces
-  return cleaned.trim();
+  // 10. Strip any remaining leading non-alphanumeric noise
+  cleaned = cleaned.replace(/^[^a-zA-Z0-9]+/, '');
+
+  cleaned = cleaned.trim();
+
+  // If the tweet has no letters or digits, discard it
+  if (!/[a-zA-Z0-9]/.test(cleaned)) {
+    return '';
+  }
+
+  return cleaned;
 }
 
 function parseCSVLine(line) {
@@ -116,17 +144,17 @@ function processCSV() {
   rawRows.forEach(row => {
     const cols = parseCSVLine(row);
     
-    // cols[2] is text, cols[3] is label (hate/nothate)
-    if (cols.length >= 4) {
-      const text = cols[2];
-      const label = cols[3].trim().toLowerCase();
+    // cols[5] is class, cols[6] is tweet text
+    if (cols.length >= 7) {
+      const text = cols[6];
+      const classVal = parseInt(cols[5].trim(), 10);
 
       let cls = -1;
-      if (label === 'hate') {
-        cls = 1; // 1 = Hate Speech
+      if (classVal === 0 || classVal === 1) {
+        cls = 1; // 1 = Hate Speech / Offensive (Block)
         hateCount++;
-      } else if (label === 'nothate') {
-        cls = 0; // 0 = Not Hate (Neither)
+      } else if (classVal === 2) {
+        cls = 0; // 0 = Not Hate / Clean (Allow)
         nothateCount++;
       } else {
         invalidCount++;
@@ -152,8 +180,8 @@ function processCSV() {
   fs.writeFileSync(outputPath, cleanedRows.join('\n'), 'utf8');
   console.log('Done!');
   console.log(`Cleaned rows written: ${cleanedRows.length - 1}`);
-  console.log(`  - Hate entries: ${hateCount}`);
-  console.log(`  - Not Hate entries: ${nothateCount}`);
+  console.log(`  - Hate/Offensive entries (Class 1): ${hateCount}`);
+  console.log(`  - Not Hate entries (Class 0): ${nothateCount}`);
   console.log(`  - Skipped (empty text): ${emptyCount}`);
   console.log(`  - Skipped (invalid format/label): ${invalidCount}`);
 }

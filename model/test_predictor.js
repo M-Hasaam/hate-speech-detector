@@ -3,24 +3,24 @@ const path = require('path');
 const readline = require('readline');
 const ToxicityPredictor = require('./predictor');
 
-const weightsPath = path.join(__dirname, 'train', 'model_weights.json');
+const weightsPath = path.join(__dirname, '..', 'train', 'model_weights.json');
 
 // Check if model weights exist
 if (!fs.existsSync(weightsPath)) {
   console.log('\n===============================================================');
-  console.log('⚠️  Error: model_weights.json not found in model/train/ folder!');
+  console.log('⚠️  Error: model_weights.json not found in root train/ folder!');
   console.log('===============================================================');
   console.log('To run this test script, you need to:');
-  console.log('1. Upload your "cleaned_data.csv" to Google Colab.');
-  console.log('2. Open the "model/train/train_model.py" script in Colab and execute it.');
+  console.log('1. Upload your "balanced_data.csv" to Google Colab.');
+  console.log('2. Open the "train/train_model.py" script in Colab and execute it.');
   console.log('3. Download the generated "model_weights.json" file.');
-  console.log('4. Place it inside the "model/train/" folder.');
+  console.log('4. Place it inside the "train/" folder.');
   console.log('===============================================================\n');
   process.exit(1);
 }
 
 const predictor = new ToxicityPredictor(weightsPath);
-console.log('✅ Classifier successfully loaded from model/train/model_weights.json!\n');
+console.log('✅ Classifier successfully loaded from train/model_weights.json!\n');
 
 // Check if an argument was provided
 const argText = process.argv.slice(2).join(' ');
