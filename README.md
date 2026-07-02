@@ -1,5 +1,5 @@
 # Chrome Extension Hate Speech Detector
-
+Hasaam
 This project is a Chrome extension designed to parse and moderate hate speech and toxic comments on social media platforms like Twitter/X, Instagram, and WhatsApp Web in real-time.
 
 ## Project Structure
