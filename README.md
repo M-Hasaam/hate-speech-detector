@@ -1,6 +1,6 @@
 # Chrome Extension Hate Speech Detector
 
-This project is a Chrome extension designed to parse and moderate hate speech and toxic comments on social media platforms like Twitter/X, Instagram, and WhatsApp Web in real-time.
+This project is a Chrome extension designed to parse and moderate hate speech and toxic comments on social media platforms like Twitter/X, Instagram, and WhatsApp Web in real-time. 
 
 ## Project Structure
 *   `labeled_data.csv`: Raw, labeled social media training data.
@@ -25,3 +25,5 @@ If you update `labeled_data.csv` and want to rebuild the clean dataset:
 ```bash
 node clean_dataset.js
 ```
+
+## WorkStyle 2 people are working on this
