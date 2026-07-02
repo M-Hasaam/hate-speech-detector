@@ -367,10 +367,10 @@
         </div>
 
         <div class="meter-group">
-          <!-- Hate Speech -->
-          <div class="meter-container">
+          <!-- Hate Speech / Not Hate -->
+          <div class="meter-container" id="meter-container-0">
             <div class="meter-header">
-              <span>Hate Speech (Class 0)</span>
+              <span id="lbl-0">Hate Speech (Class 0)</span>
               <span id="pct-0">0%</span>
             </div>
             <div class="meter-bar">
@@ -378,10 +378,10 @@
             </div>
           </div>
 
-          <!-- Offensive Language -->
-          <div class="meter-container">
+          <!-- Offensive Language / Hate Speech -->
+          <div class="meter-container" id="meter-container-1">
             <div class="meter-header">
-              <span>Offensive Language (Class 1)</span>
+              <span id="lbl-1">Offensive Language (Class 1)</span>
               <span id="pct-1">0%</span>
             </div>
             <div class="meter-bar">
@@ -390,9 +390,9 @@
           </div>
 
           <!-- Neither -->
-          <div class="meter-container">
+          <div class="meter-container" id="meter-container-2">
             <div class="meter-header">
-              <span>Neither / Clean (Class 2)</span>
+              <span id="lbl-2">Neither / Clean (Class 2)</span>
               <span id="pct-2">0%</span>
             </div>
             <div class="meter-bar">
@@ -430,6 +430,7 @@
       predictorInstance = new ToxicityPredictor();
       predictorInstance.loadModelObject(rawModelData);
       
+      initUI();
       stepLoad.classList.add('hidden');
       stepAnalyzer.classList.remove('hidden');
     }
@@ -459,6 +460,27 @@
       }
     });
 
+    function initUI() {
+      if (!predictorInstance) return;
+      const numClasses = predictorInstance.intercept.length;
+      
+      const lbl0 = document.getElementById('lbl-0');
+      const lbl1 = document.getElementById('lbl-1');
+      const lbl2 = document.getElementById('lbl-2');
+      const container2 = document.getElementById('meter-container-2');
+      
+      if (numClasses === 2) {
+        lbl0.textContent = 'Not Hate (Class 0)';
+        lbl1.textContent = 'Hate Speech (Class 1)';
+        container2.style.display = 'none';
+      } else {
+        lbl0.textContent = 'Hate Speech (Class 0)';
+        lbl1.textContent = 'Offensive Language (Class 1)';
+        lbl2.textContent = 'Neither / Clean (Class 2)';
+        container2.style.display = 'block';
+      }
+    }
+
     function handleFile(file) {
       if (!file.name.endsWith('.json')) {
         alert('Please upload a valid JSON file exported from Colab.');
@@ -477,6 +499,7 @@
           predictorInstance = new ToxicityPredictor();
           predictorInstance.loadModelObject(rawModelData);
 
+          initUI();
           // Swap UI steps
           stepLoad.classList.add('hidden');
           stepAnalyzer.classList.remove('hidden');
@@ -517,17 +540,20 @@
       badge.className = 'result-badge badge-' + res.class;
 
       // Update meters
+      const numClasses = predictorInstance.intercept.length;
       const p0 = res.probabilities[0];
       const p1 = res.probabilities[1];
-      const p2 = res.probabilities[2];
 
       document.getElementById('pct-0').textContent = (p0 * 100).toFixed(1) + '%';
       document.getElementById('pct-1').textContent = (p1 * 100).toFixed(1) + '%';
-      document.getElementById('pct-2').textContent = (p2 * 100).toFixed(1) + '%';
-
       document.getElementById('fill-0').style.width = (p0 * 100) + '%';
       document.getElementById('fill-1').style.width = (p1 * 100) + '%';
-      document.getElementById('fill-2').style.width = (p2 * 100) + '%';
+
+      if (numClasses === 3) {
+        const p2 = res.probabilities[2];
+        document.getElementById('pct-2').textContent = (p2 * 100).toFixed(1) + '%';
+        document.getElementById('fill-2').style.width = (p2 * 100) + '%';
+      }
 
       // Highlight words
       highlightWords(text);
@@ -549,14 +575,23 @@
         
         if (cleanWord && cleanWord in rawModelData.vocabulary) {
           const idx = rawModelData.vocabulary[cleanWord];
-          const coefHate = rawModelData.coefficients[0][idx];
-          const coefOffensive = rawModelData.coefficients[1][idx];
+          const numClasses = rawModelData.intercept.length;
           
-          // Decide if a word is toxic/hateful based on positive coefficients
-          if (coefHate > 0.3) {
-            return `<span class="highlight-hate" title="Hate weight: ${coefHate.toFixed(2)}">${rawWord}</span>`;
-          } else if (coefOffensive > 0.3) {
-            return `<span class="highlight-offensive" title="Offensive weight: ${coefOffensive.toFixed(2)}">${rawWord}</span>`;
+          if (numClasses === 2) {
+            // Binary setup: Class 1 is Hate Speech
+            const coefHate = rawModelData.coefficients[1][idx];
+            if (coefHate > 0.3) {
+              return `<span class="highlight-hate" title="Hate weight: ${coefHate.toFixed(2)}">${rawWord}</span>`;
+            }
+          } else {
+            // 3-Class setup: Class 0 is Hate Speech, Class 1 is Offensive
+            const coefHate = rawModelData.coefficients[0][idx];
+            const coefOffensive = rawModelData.coefficients[1][idx];
+            if (coefHate > 0.3) {
+              return `<span class="highlight-hate" title="Hate weight: ${coefHate.toFixed(2)}">${rawWord}</span>`;
+            } else if (coefOffensive > 0.3) {
+              return `<span class="highlight-offensive" title="Offensive weight: ${coefOffensive.toFixed(2)}">${rawWord}</span>`;
+            }
           }
         }
         return rawWord;

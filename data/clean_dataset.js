@@ -1,8 +1,8 @@
 const fs = require('fs');
 const path = require('path');
 
-const inputPath = path.join(__dirname, '..', 'data', 'labeled_data.csv');
-const outputPath = path.join(__dirname, '..', 'data', 'cleaned_data.csv');
+const inputPath = path.join(__dirname, 'new_data.csv');
+const outputPath = path.join(__dirname, 'cleaned_data.csv');
 
 function decodeHtmlEntities(text) {
   if (!text) return '';
@@ -43,8 +43,33 @@ function cleanTweet(text) {
   return cleaned.trim();
 }
 
+function parseCSVLine(line) {
+  const result = [];
+  let current = '';
+  let inQuotes = false;
+  
+  for (let i = 0; i < line.length; i++) {
+    const char = line[i];
+    if (char === '"') {
+      if (inQuotes && line[i + 1] === '"') {
+        current += '"';
+        i++; // skip escaped quote
+      } else {
+        inQuotes = !inQuotes;
+      }
+    } else if (char === ',' && !inQuotes) {
+      result.push(current);
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+  result.push(current);
+  return result;
+}
+
 function processCSV() {
-  console.log('Reading dataset...');
+  console.log('Reading new dataset from local data folder...');
   if (!fs.existsSync(inputPath)) {
     console.error(`Error: ${inputPath} not found!`);
     return;
@@ -55,9 +80,9 @@ function processCSV() {
   
   let inQuotes = false;
   let currentRow = '';
-  const parsedRows = [];
+  const rawRows = [];
 
-  // Parse CSV correctly handling quoted newlines
+  // Parse lines, combining multi-line entries wrapped in quotes
   for (let i = 1; i < lines.length; i++) {
     let line = lines[i];
     if (!line && i === lines.length - 1) continue;
@@ -74,43 +99,52 @@ function processCSV() {
     }
 
     if (!inQuotes) {
-      parsedRows.push(currentRow);
+      rawRows.push(currentRow);
     }
   }
 
-  console.log(`Parsed ${parsedRows.length} total rows. Starting cleaning...`);
+  console.log(`Parsed ${rawRows.length} total rows. Starting cleaning & extraction...`);
 
   const cleanedRows = [];
-  // Add header
-  cleanedRows.push('class,tweet');
+  cleanedRows.push('class,tweet'); // Output header mapping: class, tweet
 
   let emptyCount = 0;
+  let hateCount = 0;
+  let nothateCount = 0;
+  let invalidCount = 0;
 
-  parsedRows.forEach(row => {
-    // Regex to match prefix columns: index,count,hate_speech,offensive_language,neither,class
-    // e.g. "0,3,0,0,3,2,..."
-    const match = row.match(/^[^,]+,\d+,\d+,\d+,\d+,(\d+),([\s\S]*)$/);
-    if (match) {
-      const cls = match[1];
-      let tweet = match[2];
+  rawRows.forEach(row => {
+    const cols = parseCSVLine(row);
+    
+    // cols[2] is text, cols[3] is label (hate/nothate)
+    if (cols.length >= 4) {
+      const text = cols[2];
+      const label = cols[3].trim().toLowerCase();
 
-      // Remove outer quotes if present
-      if (tweet.startsWith('"') && tweet.endsWith('"')) {
-        tweet = tweet.slice(1, -1);
+      let cls = -1;
+      if (label === 'hate') {
+        cls = 1; // 1 = Hate Speech
+        hateCount++;
+      } else if (label === 'nothate') {
+        cls = 0; // 0 = Not Hate (Neither)
+        nothateCount++;
+      } else {
+        invalidCount++;
+        return; // skip rows with unknown labels
       }
-      // Unescape double-double quotes ("" -> ")
-      tweet = tweet.replace(/""/g, '"');
 
       // Clean the text
-      const cleaned = cleanTweet(tweet);
+      const cleaned = cleanTweet(text);
 
       if (cleaned.length > 0) {
-        // Escape quotes for CSV format
+        // Escape quotes for CSV
         const csvEscapedTweet = cleaned.replace(/"/g, '""');
         cleanedRows.push(`${cls},"${csvEscapedTweet}"`);
       } else {
         emptyCount++;
       }
+    } else {
+      invalidCount++;
     }
   });
 
@@ -118,7 +152,10 @@ function processCSV() {
   fs.writeFileSync(outputPath, cleanedRows.join('\n'), 'utf8');
   console.log('Done!');
   console.log(`Cleaned rows written: ${cleanedRows.length - 1}`);
-  console.log(`Rows skipped because they became empty after cleaning: ${emptyCount}`);
+  console.log(`  - Hate entries: ${hateCount}`);
+  console.log(`  - Not Hate entries: ${nothateCount}`);
+  console.log(`  - Skipped (empty text): ${emptyCount}`);
+  console.log(`  - Skipped (invalid format/label): ${invalidCount}`);
 }
 
 processCSV();

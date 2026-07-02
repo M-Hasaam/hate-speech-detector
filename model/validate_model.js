@@ -2,11 +2,11 @@ const fs = require('fs');
 const path = require('path');
 const ToxicityPredictor = require('./predictor');
 
-const weightsPath = path.join(__dirname, 'model_weights.json');
+const weightsPath = path.join(__dirname, 'train', 'model_weights.json');
 const csvPath = path.join(__dirname, '..', 'data', 'cleaned_data.csv');
 
 if (!fs.existsSync(weightsPath)) {
-  console.error('Error: model_weights.json not found!');
+  console.error('Error: model_weights.json not found in model/train/!');
   process.exit(1);
 }
 
@@ -16,7 +16,7 @@ if (!fs.existsSync(csvPath)) {
 }
 
 const predictor = new ToxicityPredictor(weightsPath);
-console.log('✅ Classifier successfully loaded from model_weights.json!');
+console.log('✅ Classifier successfully loaded from model/train/model_weights.json!');
 
 console.log('Reading and parsing cleaned_data.csv...');
 const content = fs.readFileSync(csvPath, 'utf8');
@@ -33,7 +33,7 @@ function parseCSV(text) {
   if (text[index] === '\n') index++;
   
   while (index < text.length) {
-    // 1. Read class label (0, 1, or 2)
+    // 1. Read class label (0 or 1)
     let classLabelStr = '';
     while (index < text.length && text[index] !== ',') {
       classLabelStr += text[index];
@@ -104,9 +104,8 @@ console.log(`Parsed ${dataRows.length} records from dataset. Running evaluations
 
 // Confusion matrix: [actual][predicted]
 const confusionMatrix = [
-  [0, 0, 0], // Actual Class 0 (Hate Speech)
-  [0, 0, 0], // Actual Class 1 (Offensive)
-  [0, 0, 0]  // Actual Class 2 (Neither)
+  [0, 0], // Actual Class 0 (Not Hate)
+  [0, 0]  // Actual Class 1 (Hate Speech)
 ];
 
 const errors = []; // Log a few errors for analysis
@@ -117,7 +116,7 @@ dataRows.forEach(row => {
   const pred = result.class;
   const actual = row.class;
   
-  if (actual >= 0 && actual <= 2 && pred >= 0 && pred <= 2) {
+  if (actual >= 0 && actual <= 1 && pred >= 0 && pred <= 1) {
     confusionMatrix[actual][pred]++;
     if (pred === actual) {
       correctCount++;
@@ -135,14 +134,13 @@ dataRows.forEach(row => {
 });
 
 // Compute statistics
-const labels = ['Hate Speech (0)', 'Offensive (1)', 'Neither (2)'];
+const labels = ['Not Hate (0)', 'Hate Speech (1)'];
 console.log('========================================================================');
 console.log('                      CONFUSION MATRIX');
 console.log('========================================================================');
-console.log('                   PREDICTED Class 0    PREDICTED Class 1    PREDICTED Class 2');
-console.log(`ACTUAL Class 0:       ${confusionMatrix[0][0].toString().padEnd(20)}${confusionMatrix[0][1].toString().padEnd(21)}${confusionMatrix[0][2]}`);
-console.log(`ACTUAL Class 1:       ${confusionMatrix[1][0].toString().padEnd(20)}${confusionMatrix[1][1].toString().padEnd(21)}${confusionMatrix[1][2]}`);
-console.log(`ACTUAL Class 2:       ${confusionMatrix[2][0].toString().padEnd(20)}${confusionMatrix[2][1].toString().padEnd(21)}${confusionMatrix[2][2]}`);
+console.log('                   PREDICTED Class 0    PREDICTED Class 1');
+console.log(`ACTUAL Class 0:       ${confusionMatrix[0][0].toString().padEnd(20)}${confusionMatrix[0][1]}`);
+console.log(`ACTUAL Class 1:       ${confusionMatrix[1][0].toString().padEnd(20)}${confusionMatrix[1][1]}`);
 console.log('========================================================================\n');
 
 const total = dataRows.length;
@@ -152,9 +150,9 @@ console.log(`Overall Accuracy: ${overallAccuracy.toFixed(2)}% (${correctCount}/$
 console.log('========================================================================');
 console.log('                   DETAILED CLASS METRICS');
 console.log('========================================================================');
-for (let i = 0; i < 3; i++) {
-  const actualTotal = confusionMatrix[i][0] + confusionMatrix[i][1] + confusionMatrix[i][2];
-  const predictedTotal = confusionMatrix[0][i] + confusionMatrix[1][i] + confusionMatrix[2][i];
+for (let i = 0; i < 2; i++) {
+  const actualTotal = confusionMatrix[i][0] + confusionMatrix[i][1];
+  const predictedTotal = confusionMatrix[0][i] + confusionMatrix[1][i];
   
   const precision = predictedTotal > 0 ? (confusionMatrix[i][i] / predictedTotal) * 100 : 0;
   const recall = actualTotal > 0 ? (confusionMatrix[i][i] / actualTotal) * 100 : 0;
@@ -175,6 +173,6 @@ errors.forEach((err, idx) => {
   console.log(`${idx + 1}. Tweet: "${err.tweet}"`);
   console.log(`   Actual Class:    ${labels[err.actual]}`);
   console.log(`   Predicted Class: ${labels[err.predicted]}`);
-  console.log(`   Probabilities:   Hate: ${(err.probs[0]*100).toFixed(1)}% | Off: ${(err.probs[1]*100).toFixed(1)}% | Clean: ${(err.probs[2]*100).toFixed(1)}%`);
+  console.log(`   Probabilities:   Not Hate: ${(err.probs[0]*100).toFixed(1)}% | Hate: ${(err.probs[1]*100).toFixed(1)}%`);
   console.log('------------------------------------------------------------------------');
 });

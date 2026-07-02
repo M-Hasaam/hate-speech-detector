@@ -51,6 +51,7 @@ class ToxicityPredictor {
     this.idf = [];
     this.coefficients = [];
     this.intercept = [];
+    this.labels = [];
     this.vocabSize = 0;
 
     if (modelWeightsPath) {
@@ -66,6 +67,9 @@ class ToxicityPredictor {
       this.coefficients = data.coefficients;
       this.intercept = data.intercept;
       this.vocabSize = this.idf.length;
+      this.labels = data.labels || (data.classes && data.classes.length === 2 
+        ? ['Not Hate', 'Hate Speech'] 
+        : ['Hate Speech', 'Offensive Language', 'Neither']);
       this.loaded = true;
     } catch (e) {
       console.error('Failed to load model weights:', e);
@@ -80,6 +84,9 @@ class ToxicityPredictor {
     this.coefficients = data.coefficients;
     this.intercept = data.intercept;
     this.vocabSize = this.idf.length;
+    this.labels = data.labels || (data.classes && data.classes.length === 2 
+      ? ['Not Hate', 'Hate Speech'] 
+      : ['Hate Speech', 'Offensive Language', 'Neither']);
     this.loaded = true;
   }
 
@@ -109,6 +116,7 @@ class ToxicityPredictor {
       throw new Error('Predictor model not loaded. Call loadModel() first.');
     }
 
+    const numClasses = this.intercept.length;
     const ngrams = this.tokenizeAndGetNgrams(text);
     
     // 1. Compute term frequency (TF) vector (sparse)
@@ -125,11 +133,16 @@ class ToxicityPredictor {
 
     if (activeIndices.size === 0) {
       // No words matched vocabulary, return default/neutral classification
+      // In binary (2 classes), default is index 0 (Not Hate). In 3-class, it is index 2 (Neither).
+      const defaultClass = (numClasses === 2) ? 0 : 2;
+      const defaultProbs = new Array(numClasses).fill(0.0);
+      defaultProbs[defaultClass] = 1.0;
+
       return {
-        class: 2, // Neither
-        label: 'Neither',
-        probabilities: [0.0, 0.0, 1.0],
-        scores: [0.0, 0.0, 0.0]
+        class: defaultClass,
+        label: this.labels[defaultClass],
+        probabilities: defaultProbs,
+        scores: new Array(numClasses).fill(0.0)
       };
     }
 
@@ -150,7 +163,6 @@ class ToxicityPredictor {
     });
 
     // 4. Logistic Regression Scores (z = x*w + b)
-    const numClasses = this.intercept.length;
     const scores = new Array(numClasses).fill(0);
 
     for (let c = 0; c < numClasses; c++) {
@@ -177,11 +189,9 @@ class ToxicityPredictor {
       }
     });
 
-    const labels = ['Hate Speech', 'Offensive Language', 'Neither'];
-
     return {
       class: maxIdx,
-      label: labels[maxIdx],
+      label: this.labels[maxIdx],
       probabilities: probabilities,
       scores: scores
     };

@@ -66,10 +66,18 @@ function evaluateAndRespond(message, sendResponse) {
       let blockAction = 'none';
       const p = result.probabilities;
       
-      if (p[0] >= settings.hateThreshold) {
-        blockAction = 'hate';
-      } else if (p[1] >= settings.offensiveThreshold) {
-        blockAction = 'offensive';
+      if (p.length === 2) {
+        // Binary setup: index 0 = Not Hate, index 1 = Hate Speech
+        if (p[1] >= settings.hateThreshold) {
+          blockAction = 'hate';
+        }
+      } else {
+        // 3-class setup: index 0 = Hate Speech, index 1 = Offensive Language
+        if (p[0] >= settings.hateThreshold) {
+          blockAction = 'hate';
+        } else if (p[1] >= settings.offensiveThreshold) {
+          blockAction = 'offensive';
+        }
       }
       
       const newStats = {
