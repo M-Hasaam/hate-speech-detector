@@ -23,24 +23,31 @@ from sklearn.metrics import classification_report, accuracy_score, confusion_mat
 # %%
 # Load data (change path if necessary)
 try:
-    # Check both single-level (../data) and double-level (../../data) parent directories
+    # 1. Check local directory candidates
     balanced_path = os.path.join("..", "data", "balanced_data.csv")
-    
     if not os.path.exists(balanced_path):
         balanced_path = os.path.join("..", "..", "data", "balanced_data.csv")
+    if not os.path.exists(balanced_path) and os.path.exists("balanced_data.csv"):
+        balanced_path = "balanced_data.csv"
         
     if os.path.exists(balanced_path):
         df = pd.read_csv(balanced_path)
-        print(f"Dataset loaded successfully from {balanced_path}! Total records: {len(df)}")
+        print(f"Dataset loaded successfully from local path {balanced_path}! Total records: {len(df)}")
     else:
-        # Fallback for Colab environment upload (local current directory)
-        if os.path.exists("balanced_data.csv"):
-            df = pd.read_csv("balanced_data.csv")
-            print(f"Dataset loaded successfully from local balanced_data.csv! Total records: {len(df)}")
-        else:
-            raise FileNotFoundError()
-except FileNotFoundError:
-    print("Error: balanced_data.csv not found. Please place it in ../data/ (or ../../data/) or upload it to your workspace.")
+        # 2. Fallback to GitHub raw URL for remote run (e.g. Colab)
+        github_url = "https://raw.githubusercontent.com/M-Hasaam/hate-speech-detector/main/data/balanced_data.csv"
+        print(f"Dataset not found locally. Fetching directly from GitHub: {github_url} ...")
+        df = pd.read_csv(github_url)
+        print(f"Dataset loaded successfully from GitHub! Total records: {len(df)}")
+except Exception as e:
+    print(f"Error: Could not load dataset. Details: {e}")
+
+
+# Resolve output directory for models and plots
+if "__file__" in locals() or "__file__" in globals():
+    output_dir = os.path.dirname(os.path.abspath(__file__))
+else:
+    output_dir = "train" if os.path.exists("train") else "."
 
 # Drop any rows with NaN tweets
 df = df.dropna(subset=['tweet'])
@@ -144,7 +151,7 @@ plt.barh(top_hate_words, top_hate_coefs, color='red')
 plt.title("Top Words for 'Hate Speech'")
 plt.xlabel("Coefficient Weight")
 plt.tight_layout()
-plt.savefig("logistic_coefficients.png")
+plt.savefig(os.path.join(output_dir, "logistic_coefficients.png"))
 plt.show()
 
 # Plot Sigmoid Curve / Prediction Probabilities Distribution
@@ -157,7 +164,7 @@ plt.title("Distribution of Logistic Sigmoid Probabilities")
 plt.xlabel("Probability of Hate Speech")
 plt.ylabel("Frequency")
 plt.legend()
-plt.savefig("logistic_probability_curve.png")
+plt.savefig(os.path.join(output_dir, "logistic_probability_curve.png"))
 plt.show()
 
 # %% [markdown]
@@ -198,8 +205,43 @@ model_package = {
 }
 
 # Resolve file write destination
-output_path = os.path.join(os.path.dirname(__file__), "model_weights.json")
+output_path = os.path.join(output_dir, "model_weights.json")
 with open(output_path, "w") as f:
     json.dump(model_package, f)
 
 print(f"\nModel successfully exported to {output_path}!")
+
+# Create and display download link for the JSON model weights directly in the notebook output
+try:
+    from IPython.display import HTML, display
+    import base64
+    
+    with open(output_path, 'r') as f:
+        json_data = f.read()
+    b64 = base64.b64encode(json_data.encode()).decode()
+    html_link = f'''
+    <div style="padding: 12px 20px; border: 2px solid #007acc; background-color: #f0f8ff; border-radius: 8px; margin-top: 15px; display: inline-block;">
+        <a href="data:application/json;base64,{b64}" download="model_weights.json" style="font-size: 16px; color: #007acc; font-weight: bold; text-decoration: none;">
+            📥 Click here to download model_weights.json
+        </a>
+    </div>
+    '''
+    display(HTML(html_link))
+except Exception as e:
+    print(f"Could not generate download link: {e}")
+
+
+# %% [markdown]
+# ## 8. Download Outputs (Google Colab only)
+# Automatically download the exported model weights and plots to your local machine if running in a Colab environment.
+
+# %%
+try:
+    from google.colab import files
+    print("Colab environment detected. Triggering file downloads...")
+    files.download(output_path)
+    files.download("logistic_coefficients.png")
+    files.download("logistic_probability_curve.png")
+except ImportError:
+    print("Not running in Google Colab. Files are saved locally.")
+
