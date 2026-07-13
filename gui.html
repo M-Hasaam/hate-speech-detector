@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hate Speech Detector GUI</title>
+  <style>
+    :root {
+      --bg: #0f1115;
+      --panel: #171b22;
+      --panel-2: #1f2430;
+      --text: #edf2f7;
+      --muted: #9aa7b2;
+      --accent: #66d9ef;
+      --good: #7ee787;
+      --bad: #ff7b72;
+      --border: rgba(255,255,255,0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top, #1b2330 0%, var(--bg) 60%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px;
+    }
+
+    .wrap { max-width: 980px; margin: 0 auto; }
+
+    .hero {
+      margin-bottom: 24px;
+    }
+
+    h1 { margin: 0 0 10px; font-size: 2.3rem; }
+
+    .subtitle { color: var(--muted); line-height: 1.6; }
+
+    .grid {
+      display: grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap: 18px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.28);
+    }
+
+    label {
+      display: block;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    textarea {
+      width: 100%;
+      min-height: 160px;
+      resize: vertical;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: #0f131a;
+      color: var(--text);
+      padding: 14px;
+      font-size: 1rem;
+      outline: none;
+    }
+
+    textarea:focus {
+      border-color: rgba(102, 217, 239, 0.6);
+      box-shadow: 0 0 0 3px rgba(102, 217, 239, 0.12);
+    }
+
+    .row {
+      display: flex;
+      gap: 12px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 0;
+      border-radius: 999px;
+      padding: 12px 18px;
+      font-weight: 700;
+      cursor: pointer;
+      background: linear-gradient(135deg, #66d9ef, #7ee787);
+      color: #071018;
+    }
+
+    button.secondary {
+      background: rgba(255,255,255,0.06);
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .result {
+      display: grid;
+      gap: 14px;
+    }
+
+    .badge {
+      display: inline-flex;
+      width: fit-content;
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .badge.good { background: rgba(126, 231, 135, 0.14); color: var(--good); }
+    .badge.bad { background: rgba(255, 123, 114, 0.14); color: var(--bad); }
+    .metric {
+      background: rgba(255,255,255,0.04);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 14px;
+    }
+
+    .metric .label { color: var(--muted); font-size: 0.9rem; }
+    .metric .value { margin-top: 6px; font-size: 1.05rem; font-weight: 700; }
+
+    .hint {
+      margin-top: 14px;
+      color: var(--muted);
+      font-size: 0.92rem;
+      line-height: 1.6;
+    }
+
+    .loading {
+      color: var(--accent);
+      margin-top: 10px;
+      font-size: 0.95rem;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <h1>Hate Speech Detector GUI</h1>
+      <div class="subtitle">
+        Type a sentence here, click Detect, and the local BERT model will classify it in your browser.
+      </div>
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <label for="textInput">Enter sentence</label>
+        <textarea id="textInput" placeholder="Try: you are disgusting"></textarea>
+        <div class="row">
+          <button id="detectBtn">Detect</button>
+          <button id="sampleBtn" class="secondary">Load sample</button>
+        </div>
+        <div id="loading" class="loading" style="display:none;">Loading model or running prediction...</div>
+        <div class="hint">
+          This GUI sends the sentence to a local server running the BERT model. No terminal typing needed.
+        </div>
+      </div>
+
+      <div class="card result">
+        <div id="verdictBadge" class="badge good">Waiting</div>
+        <div class="metric">
+          <div class="label">Label</div>
+          <div id="labelValue" class="value">-</div>
+        </div>
+        <div class="metric">
+          <div class="label">Score</div>
+          <div id="scoreValue" class="value">-</div>
+        </div>
+        <div class="metric">
+          <div class="label">Model</div>
+          <div id="modelValue" class="value">-</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="gui.js"></script>
+</body>
+</html>

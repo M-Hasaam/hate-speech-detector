@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple BERT Model Explanation</title>
+  <style>
+    :root {
+      --bg: #111111;
+      --panel: #1b1b1b;
+      --panel-2: #232323;
+      --text: #f3f4f6;
+      --muted: #b7b7b7;
+      --accent: #8dd3ff;
+      --accent-2: #ffd36e;
+      --accent-3: #9effc8;
+      --border: rgba(255, 255, 255, 0.08);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Arial, Helvetica, sans-serif;
+      background: radial-gradient(circle at top, #1c1c1c 0%, var(--bg) 60%);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 32px;
+    }
+
+    .wrap {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      margin: 0 0 10px;
+      font-size: 2.2rem;
+    }
+
+    .subtitle {
+      color: var(--muted);
+      margin-bottom: 28px;
+      line-height: 1.6;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+
+    .card {
+      background: linear-gradient(180deg, var(--panel), var(--panel-2));
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 22px;
+      min-height: 220px;
+      box-shadow: 0 16px 40px rgba(0, 0, 0, 0.35);
+    }
+
+    .step {
+      display: inline-block;
+      font-size: 0.8rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      margin-bottom: 12px;
+      color: var(--accent);
+    }
+
+    .card h2 {
+      margin: 0 0 10px;
+      font-size: 1.2rem;
+    }
+
+    .card p, .card li {
+      color: var(--muted);
+      line-height: 1.7;
+      font-size: 0.98rem;
+    }
+
+    ul { margin: 12px 0 0 18px; padding: 0; }
+
+    .arrow {
+      text-align: center;
+      font-size: 2rem;
+      color: var(--accent-2);
+      margin: -2px 0 14px;
+    }
+
+    .bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-top: 18px;
+    }
+
+    .pill {
+      border: 1px solid var(--border);
+      background: rgba(255,255,255,0.03);
+      padding: 10px 14px;
+      border-radius: 999px;
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+
+    .footer {
+      margin-top: 18px;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .callout {
+      margin-top: 22px;
+      border-left: 4px solid var(--accent-3);
+      background: rgba(158, 255, 200, 0.06);
+      padding: 16px 18px;
+      border-radius: 12px;
+      color: #dfffee;
+    }
+
+    @media (max-width: 900px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>Simple BERT Model View</h1>
+    <div class="subtitle">
+      Use this page when Netron feels too complex. It explains the model in a clean 3-step flow you can present to anyone.
+    </div>
+
+    <div class="grid">
+      <div class="card">
+        <div class="step">Step 1</div>
+        <h2>Input Text</h2>
+        <p>The sentence is split into tokens. The tokenizer turns words into numbers that the model can understand.</p>
+        <div class="bar">
+          <div class="pill">Sentence</div>
+          <div class="pill">Tokenizer</div>
+          <div class="pill">Token IDs</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="step">Step 2</div>
+        <h2>BERT Thinks</h2>
+        <p>The 12-layer BERT encoder reads the whole sentence and learns the context of each word.</p>
+        <div class="bar">
+          <div class="pill">12 Layers</div>
+          <div class="pill">12 Heads</div>
+          <div class="pill">Context</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="step">Step 3</div>
+        <h2>Final Decision</h2>
+        <p>The classifier head gives toxicity scores. The highest score decides the label.</p>
+        <div class="bar">
+          <div class="pill">toxic</div>
+          <div class="pill">insult</div>
+          <div class="pill">identity_hate</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="arrow">↓</div>
+
+    <div class="card">
+      <h2>What your chatbot does</h2>
+      <ul>
+        <li>Reads a sentence from the terminal.</li>
+        <li>Loads the local BERT model from the cache folder.</li>
+        <li>Outputs HATE or NOT HATE based on the score.</li>
+        <li>Runs locally on your machine after the first download.</li>
+      </ul>
+
+      <div class="callout">
+        Short presentation line: “The text goes into BERT, BERT checks context, and the classifier decides whether the sentence is toxic or safe.”
+      </div>
+
+      <div class="footer">
+        If someone asks “where is the model?”, show the file path in Netron: the ONNX file inside the transformers cache folder.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

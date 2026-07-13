@@ -1,59 +1,11 @@
 const readline = require('readline');
-
-const HF_MODEL_ID = 'Xenova/toxic-bert';
-const HATE_SCORE_THRESHOLD = 0.5;
+const { HF_MODEL_ID, loadClassifier, classifyText } = require('./model_engine');
 
 const rl = readline.createInterface({
   input: process.stdin,
   output: process.stdout,
   prompt: 'sentence> '
 });
-
-let classifier = null;
-
-function isToxicLabel(label) {
-  const normalized = String(label || '').toLowerCase();
-  return (
-    normalized.includes('toxic') ||
-    normalized.includes('insult') ||
-    normalized.includes('obscene') ||
-    normalized.includes('threat') ||
-    normalized.includes('identity_hate')
-  );
-}
-
-async function loadClassifier() {
-  if (classifier) {
-    return classifier;
-  }
-
-  const { pipeline, env } = await import('@huggingface/transformers');
-  env.allowRemoteModels = true;
-  env.allowLocalModels = true;
-  classifier = await pipeline('text-classification', HF_MODEL_ID);
-  return classifier;
-}
-
-async function classifyLocally(sentence) {
-  const model = await loadClassifier();
-  const result = await model(sentence, { topk: null });
-
-  const rows = Array.isArray(result) ? result : [result];
-  const topResult = rows.reduce((best, item) => {
-    if (!best || (item.score ?? 0) > (best.score ?? 0)) return item;
-    return best;
-  }, null);
-
-  const label = topResult?.label || 'unknown';
-  const score = topResult?.score ?? 0;
-
-  return {
-    label,
-    verdict: (isToxicLabel(label) && score >= HATE_SCORE_THRESHOLD) ? 'HATE' : 'NOT HATE',
-    score,
-    source: 'local-bert'
-  };
-}
 
 async function main() {
   console.log('Terminal hate-speech checker loaded.');
@@ -86,12 +38,12 @@ async function main() {
     }
 
     try {
-      const result = await classifyLocally(sentence);
+      const result = await classifyText(sentence);
 
       console.log(`Result: ${result.verdict}`);
       console.log(`Label: ${result.label}`);
       console.log(`Score: ${(result.score * 100).toFixed(2)}%`);
-      console.log(`Model: ${result.source}`);
+      console.log(`Model: ${result.model}`);
     } catch (error) {
       console.error(`Prediction error: ${error.message}`);
     }
