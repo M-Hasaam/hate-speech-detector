@@ -16,21 +16,6 @@ yarn-error.log*
 .DS_Store
 Thumbs.db
 
-# Python cache and virtual environments
-__pycache__/
-*.py[cod]
-.venv/
-venv/
-env/
-
-# Notebook checkpoints
-.ipynb_checkpoints/
-
-# Generated model artifacts
-extension/model_weights.json
-train/model_weights.json
-sandbox/model_weights.js
-
 # Local Hugging Face / token files
 hf_token.txt
 *.token
