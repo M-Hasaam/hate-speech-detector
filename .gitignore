@@ -1,0 +1,39 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Python cache and virtual environments
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Notebook checkpoints
+.ipynb_checkpoints/
+
+# Generated model artifacts
+extension/model_weights.json
+train/model_weights.json
+sandbox/model_weights.js
+
+# Local Hugging Face / token files
+hf_token.txt
+*.token
+
+# VS Code workspace state
+.vscode/
